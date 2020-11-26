@@ -963,7 +963,6 @@
 #include "interface\bugs&suggs.dm"
 #include "interface\interface.dm"
 #include "interface\skin.dmf"
-#include "maps\city\city_level1.dmm"
 #include "maps\forest\flevel1.dmm"
 #include "maps\forest\flevel2.dmm"
 #include "maps\forest\flevel3.dmm"
