@@ -1,0 +1,501 @@
+
+/obj/item/weapon/gun/projectile/submachinegun
+	force = 10
+	throwforce = 20
+	var/jamcheck = 0
+	var/last_fire = -1
+
+
+	// more accuracy than MGs, less than everything else
+	accuracy_list = list(
+
+		// small body parts: head, hand, feet
+		"small" = list(
+			SHORT_RANGE_STILL = 49,
+			SHORT_RANGE_MOVING = 39,
+
+			MEDIUM_RANGE_STILL = 39,
+			MEDIUM_RANGE_MOVING = 31,
+
+			LONG_RANGE_STILL = 14,
+			LONG_RANGE_MOVING = 11,
+
+			VERY_LONG_RANGE_STILL = 7,
+			VERY_LONG_RANGE_MOVING = 6),
+
+		// medium body parts: limbs
+		"medium" = list(
+			SHORT_RANGE_STILL = 59,
+			SHORT_RANGE_MOVING = 47,
+
+			MEDIUM_RANGE_STILL = 39,
+			MEDIUM_RANGE_MOVING = 31,
+
+			LONG_RANGE_STILL = 16,
+			LONG_RANGE_MOVING = 13,
+
+			VERY_LONG_RANGE_STILL = 9,
+			VERY_LONG_RANGE_MOVING = 7),
+
+		// large body parts: chest, groin
+		"large" = list(
+			SHORT_RANGE_STILL = 79,
+			SHORT_RANGE_MOVING = 63,
+
+			MEDIUM_RANGE_STILL = 59,
+			MEDIUM_RANGE_MOVING = 47,
+
+			LONG_RANGE_STILL = 39,
+			LONG_RANGE_MOVING = 31,
+
+			VERY_LONG_RANGE_STILL = 16,
+			VERY_LONG_RANGE_MOVING = 13),
+	)
+
+	accuracy_increase_mod = 2.00
+	full_auto = TRUE
+	accuracy_decrease_mod = 6.00
+	handle_casings = EJECT_CASINGS
+	KD_chance = KD_CHANCE_LOW
+	stat = "SMG"
+
+/obj/item/weapon/gun/projectile/submachinegun/mp40
+	name = "MP-40"
+	desc = "German submachinegun chambered in 9x19 Parabellum, with a 32 magazine magazine layout. Standard issue amongst most troops."
+	icon_state = "mp40"
+	item_state = "mp40"
+	load_method = MAGAZINE
+	slot_flags = SLOT_BACK|SLOT_BELT
+	w_class = 3
+	weight = 3.97
+	fire_sound = 'sound/weapons/mp40.ogg'
+	caliber = "9x19mm"
+	magazine_type = /obj/item/ammo_magazine/mp40
+
+	firemodes = list(
+		list(name="full auto",	burst=1, burst_delay=1.2, recoil=0.4, move_delay=0, dispersion = list(0.6, 0.8, 1.0, 1.2, 1.4)),
+		)
+
+	sel_mode = 1
+	effectiveness_mod = 1.05
+
+/obj/item/weapon/gun/projectile/submachinegun/mp40/update_icon()
+	if (ammo_magazine)
+		icon_state = "mp40"
+/*		if (wielded)
+			item_state = "mp40-w"
+		else
+			item_state = "mp40"*/
+	else
+		icon_state = "mp400"
+/*		if (wielded)
+			item_state = "mp40-w"
+		else
+			item_state = "mp400"*/
+	update_held_icon()
+	return
+
+/obj/item/weapon/gun/projectile/submachinegun/handle_post_fire()
+	..()
+
+	if (istype(src, /obj/item/weapon/gun/projectile/semiautomatic/stg) || istype(src, /obj/item/weapon/gun/projectile/semiautomatic/fg42))
+		return
+
+	if (world.time - last_fire > 50)
+		jamcheck = 0
+	else
+		++jamcheck
+
+	if (prob(jamcheck*0.2))
+		jammed = TRUE
+		jamcheck = 0
+		//Again its different code for calculating this, fucking why
+		//Only way to check the users skill to test for a jam is to handle this as the user fires, not after. but fuck me right?
+
+	last_fire = world.time
+
+/obj/item/weapon/gun/projectile/submachinegun/attack_self(mob/user)
+	var/mob/living/carbon/human/H = user //Yes its shitcode fuck you.
+	if (jammed)
+		user.visible_message("<span class = 'notice'>\The [user] starts to unjam the \the [src].</span>")
+		playsound(loc, pick("sound/items/War_UI_Inventory_Organic_Gun_Parts_1.ogg","sound/items/War_UI_Inventory_Organic_Gun_Parts_2.ogg","sound/items/War_UI_Inventory_Organic_Gun_Parts_3.ogg","sound/items/War_UI_Inventory_Organic_Gun_Parts_4.ogg","sound/items/War_UI_Inventory_Organic_Gun_Parts_5.ogg","sound/items/War_UI_Inventory_Organic_Gun_Parts_6.ogg","sound/items/War_UI_Inventory_Organic_Gun_Parts_7.ogg"), 50, TRUE, -5)
+		if (do_after(user,60/(H.getStatCoeff("smg"))))
+			user << "<span class = 'danger'>With a click, the gun becomes unjammed.</span>"
+			playsound(loc, "sound/items/War_UI_Inventory_Equip_Change_Weapon_Pack_4.ogg", 50, TRUE, -5)
+			jammed = FALSE
+		return
+	if (firemodes.len > 1)
+		..()
+	else
+		unload_ammo(user)
+
+/obj/item/weapon/gun/projectile/submachinegun/bly
+	name = "blyskawica"
+	desc = "A polish submachinegun, manufactured covertly by the Polish Home Army."
+	icon_state = "blyskawica"
+	item_state = "blyskawica"
+	load_method = MAGAZINE
+	slot_flags = SLOT_BACK|SLOT_BELT
+	w_class = 3
+	weight = 3.97
+	caliber = "9x19mm"
+	magazine_type = /obj/item/ammo_magazine/bly
+
+	firemodes = list(
+		list(name="full auto",	burst=1, burst_delay=1.2, recoil=0.7, move_delay=0, dispersion = list(0.6, 0.8, 1.2, 1.4, 1.6)),
+		)
+
+	sel_mode = 1
+	effectiveness_mod = 1.05
+
+/obj/item/weapon/gun/projectile/submachinegun/bly/update_icon()
+	if (ammo_magazine)
+		icon_state = "blyskawica"
+/*		if (wielded)
+			item_state = "mp40-w"
+		else
+			item_state = "mp40"*/
+	else
+		icon_state = "blyskawica0"
+/*		if (wielded)
+			item_state = "mp40-w"
+		else
+			item_state = "mp400"*/
+	update_held_icon()
+	return
+
+/obj/item/weapon/gun/projectile/submachinegun/ppsh
+	name = "PPSh-41"
+	desc = "Soviet submachinegun with a very large drum magazine. Capable of bringing many targets down in Stalin's name."
+	icon_state = "ppsh"
+	item_state = "ppsh"
+	load_method = MAGAZINE
+	slot_flags = SLOT_BACK|SLOT_BELT
+	w_class = 3
+	fire_sound = 'sound/weapons/m16.ogg'
+	caliber = "a762x25"
+	magazine_type = /obj/item/ammo_magazine/a556/ppsh
+	weight = 4.63
+	firemodes = list(
+		list(name="single shot", burst=1, burst_delay=0.8, recoil=0.4, move_delay=0, dispersion = list(0.2, 0.3, 0.4, 0.6, 0.8)),
+		list(name="full auto",	burst=1, burst_delay=1.0, recoil=0.6, move_delay=0, dispersion = list(0.8, 1.0, 1.2, 1.4, 1.6)),
+		)
+
+//	can_wield = TRUE
+
+	sel_mode = 1
+
+/obj/item/weapon/gun/projectile/submachinegun/ppsh/update_icon()
+	if (ammo_magazine)
+		icon_state = "ppsh"
+/*		if (wielded)
+			item_state = "ppsh"
+		else
+			item_state = "ppsh"*/
+	else
+		icon_state = "ppsh_empty"
+/*		if (wielded)
+			item_state = "ppsh_empty"
+		else
+			item_state = "ppsh_empty"*/
+	update_held_icon()
+	return
+
+/obj/item/weapon/gun/projectile/submachinegun/pps
+	name = "PPS-43"
+	desc = "Russian submachine gun chambered in 7.62x25mm Tokarev."
+	icon_state = "pps"
+	item_state = "pps"
+	load_method = MAGAZINE
+	slot_flags = SLOT_BACK|SLOT_BELT
+	w_class = 3
+	//fire_sound = ''
+	caliber = "7.62x25mm"
+	magazine_type = /obj/item/ammo_magazine/c762x25mm_pps
+	weight = 3.34
+	firemodes = list(
+		list(name="full auto",	burst=1, burst_delay=1.0, recoil=0.6, move_delay=0, dispersion = list(0.9, 1.3, 1.3, 1.3, 1.5)),
+		)
+
+//	can_wield = TRUE
+
+	sel_mode = 1
+
+/obj/item/weapon/gun/projectile/submachinegun/pps/update_icon()
+	if (ammo_magazine)
+		icon_state = "pps"
+	else
+		icon_state = "pps0"
+	return
+
+/obj/item/weapon/gun/projectile/submachinegun/fedorov
+	name = "Fedorov Avtomat"
+	desc = "Russian submachine gun chambered in 7.62x25mm Tokarev."
+	icon_state = "avtomat_federov"
+	item_state = "avtomat_federov"
+	load_method = MAGAZINE
+	slot_flags = SLOT_BACK|SLOT_BELT
+	w_class = 3
+	//fire_sound = ''
+	caliber = "7.62x25mm"
+	magazine_type = /obj/item/ammo_magazine/c762x25mm_pps
+	weight = 3.04
+	firemodes = list(
+		list(name="full auto",	burst=1, burst_delay=1.0, recoil=0.9, move_delay=0, dispersion = list(0.9, 1.3, 1.3, 1.3, 1.5)),
+		)
+
+//	can_wield = TRUE
+
+	sel_mode = 1
+
+/obj/item/weapon/gun/projectile/submachinegun/fedorov/update_icon()
+	if (ammo_magazine)
+		icon_state = "avtomat_federov"
+	else
+		icon_state = "avtomat_federov0"
+	return
+
+/obj/item/weapon/gun/projectile/submachinegun/stenmk2
+	name = "Sten MKII"
+	desc = "British submachine gun chambered in 9x19mm."
+	icon_state = "sten"
+	item_state = "sten"
+	load_method = MAGAZINE
+	slot_flags = SLOT_BACK|SLOT_BELT
+	w_class = 3
+	//fire_sound = '' // TO DO
+	caliber = "9x19mm"
+	magazine_type = /obj/item/ammo_magazine/mp40/c9x19mm_stenmk2
+	weight = 3.2
+	firemodes = list(
+		list(name="full auto",	burst=1, burst_delay=1.2, recoil=0.4, move_delay=0, dispersion = list(1.0, 1.4, 1.4, 1.4, 1.6)),
+		)
+
+//	can_wield = TRUE
+
+	sel_mode = 1
+
+/obj/item/weapon/gun/projectile/submachinegun/stenmk2/update_icon()
+	if (ammo_magazine)
+		icon_state = "sten"
+	else
+		icon_state = "sten0"
+	return
+
+/obj/item/weapon/gun/projectile/submachinegun/kis
+	name = "KIS"
+	desc = "Polish submachine gun chambered in 9x19mm."
+	icon_state = "kis"
+	item_state = "model38"
+	load_method = MAGAZINE
+	slot_flags = SLOT_BACK|SLOT_BELT
+	w_class = 3
+	//fire_sound = '' // TO DO
+	caliber = "9x19mm"
+	magazine_type = /obj/item/ammo_magazine/mp40/c9x19mm_stenmk2
+	weight = 3.2
+	firemodes = list(
+		list(name="full auto",	burst=1, burst_delay=1.2, recoil=0.4, move_delay=0, dispersion = list(0.6,0.8, 1.0, 1.2, 1.4, 1.6)),
+		)
+
+//	can_wield = TRUE
+
+	sel_mode = 1
+
+/obj/item/weapon/gun/projectile/submachinegun/kis/update_icon()
+	if (ammo_magazine)
+		icon_state = "kis"
+	else
+		icon_state = "kis0"
+	return
+
+
+/obj/item/weapon/gun/projectile/submachinegun/modello38
+	name = "Modello 38"
+	desc = "Full name MAB 38 'Moschetto Automatico Modello 1938', a standard issue submachine gun used by the Royal Italian Army. You can feel the power of meatballs in your side."
+	icon_state = "model38"
+	item_state = "model38"
+	load_method = MAGAZINE
+	slot_flags = SLOT_BACK|SLOT_BELT
+	w_class = 3
+	caliber = "9x19mm"
+	magazine_type = /obj/item/ammo_magazine/s9x19mm
+	weight = 4.2
+	firemodes = list(
+			list(name="full auto",	burst=1, burst_delay=1.2, recoil=0.6, move_delay=0, dispersion = list(0.8, 1.0, 1.2, 1.4)),
+		)
+	sel_mode = 1
+	attachment_slots = ATTACH_IRONSIGHTS|ATTACH_BARREL
+
+/obj/item/weapon/gun/projectile/submachinegun/modello38/update_icon()
+	if (ammo_magazine)
+		icon_state = "model38"
+		item_state = "model38"
+	else
+		icon_state = "model380"
+		item_state = "model380"
+	update_held_icon()
+	return
+
+/obj/item/weapon/gun/projectile/submachinegun/ovp
+	name = "Beretta OVP"
+	desc = "The Beretta OVP was a submachine gun developed in Italy."
+	icon_state = "ovp"
+	item_state = "ovp"
+	load_method = MAGAZINE
+	slot_flags = SLOT_BACK|SLOT_BELT
+	w_class = 3
+	caliber = "9x19mm"
+	magazine_type = /obj/item/ammo_magazine/s9x19mm
+	weight = 4
+	firemodes = list(
+		list(name="full auto",	burst=1, burst_delay=1.2, recoil=0.8, move_delay=0, dispersion = list(0.8, 1.0, 1.2, 1.4)),
+		)
+	sel_mode = 1
+	attachment_slots = ATTACH_IRONSIGHTS|ATTACH_BARREL
+
+/obj/item/weapon/gun/projectile/submachinegun/ovp/update_icon()
+	if (ammo_magazine)
+		icon_state = "ovp"
+		item_state = "ovp"
+	else
+		icon_state = "ovp0"
+		item_state = "ovp0"
+	update_held_icon()
+	return
+
+
+/obj/item/weapon/gun/projectile/submachinegun/type100
+	name = "Type 100"
+	desc = "The standard Japanese SMG."
+	icon_state = "type100"
+	item_state = "model1380"
+	load_method = MAGAZINE
+	slot_flags = SLOT_BACK|SLOT_BELT
+	w_class = 3
+	caliber = "c8mmnambu_smg"
+	magazine_type = /obj/item/ammo_magazine/c8mmnambu_smg
+	weight = 4.2
+	firemodes = list(
+		list(name="full auto",	burst=1, burst_delay=1.2, recoil=1.2, move_delay=0, dispersion = list(0.8, 1.0, 1.2, 1.6)),
+		)
+	sel_mode = 1
+	attachment_slots = ATTACH_IRONSIGHTS|ATTACH_BARREL
+
+/obj/item/weapon/gun/projectile/submachinegun/type100/update_icon()
+	if (ammo_magazine)
+		icon_state = "type100"
+		item_state = "type100"
+	else
+		icon_state = "type1000"
+		item_state = "type1000"
+	update_held_icon()
+	return
+
+/obj/item/weapon/gun/projectile/submachinegun/grease
+	name = "Grease gun"
+	desc = "A small, simple SMG issued to some US troops."
+	icon_state = "greasegun"
+	item_state = "greasegun"
+	load_method = MAGAZINE
+	slot_flags = SLOT_BACK|SLOT_BELT
+	w_class = 3
+	caliber = "c45_smg"
+	magazine_type = /obj/item/ammo_magazine/thompson_ammo
+	weight = 3.7
+	firemodes = list(
+		list(name="full auto",	burst=1, burst_delay=1.2, recoil=0.4, move_delay=0, dispersion = list(0.4, 0.6, 0.8, 1.0, 1.2)),
+		)
+	sel_mode = 1
+	attachment_slots = ATTACH_IRONSIGHTS|ATTACH_BARREL
+
+/obj/item/weapon/gun/projectile/submachinegun/grease/update_icon()
+	if (ammo_magazine)
+		icon_state = "greasegun"
+		item_state = "greasegun"
+	else
+		icon_state = "greasegun0"
+		item_state = "greasegun0"
+	update_held_icon()
+	return
+
+/obj/item/weapon/gun/projectile/submachinegun/thompson
+	name = "Thompson M1A1"
+	desc = "Used by both gangsters and law enforcement, the Thompson SMG is the standard-issue SMG of the US Army."
+	icon_state = "thompson"
+	item_state = "thompson"
+	load_method = MAGAZINE
+	slot_flags = SLOT_BACK|SLOT_BELT
+	w_class = 3
+	caliber = "c45_smg"
+	magazine_type = /obj/item/ammo_magazine/thompson_ammo
+	weight = 4.5
+	firemodes = list(
+		list(name="full auto",	burst=1, burst_delay=1.2, recoil=1.8, move_delay=0, dispersion = list(1.2, 1.4, 1.4, 1.4, 1.6)),
+		)
+	sel_mode = 1
+	attachment_slots = ATTACH_IRONSIGHTS|ATTACH_BARREL
+
+/obj/item/weapon/gun/projectile/submachinegun/thompson/update_icon()
+	if (ammo_magazine)
+		icon_state = "thompson"
+		item_state = "thompson"
+	else
+		icon_state = "thompson0"
+		item_state = "thompson0"
+	update_held_icon()
+	return
+
+/obj/item/weapon/gun/projectile/submachinegun/thompson/tommygun
+	name = "Tommy gun"
+	desc = "Used both gangsters and the resistence, the Tommy SMG is almost the same as the Thompson, but cheaper."
+	icon_state = "tommygun"
+	item_state = "tommygun"
+	load_method = MAGAZINE
+	slot_flags = SLOT_BACK|SLOT_BELT
+	w_class = 3
+	caliber = "c45_smg"
+	magazine_type = /obj/item/ammo_magazine/thompson_ammo/tommy_ammo
+	weight = 4.2
+	firemodes = list(
+		list(name="full auto",	burst=1, burst_delay=1.2, recoil=1.8, move_delay=2, dispersion = list(1.2, 1.4, 1.4, 1.4, 1.6)),
+		)
+	sel_mode = 1
+	attachment_slots = ATTACH_IRONSIGHTS|ATTACH_BARREL
+
+/obj/item/weapon/gun/projectile/submachinegun/thompson/tommygun/update_icon()
+	if (ammo_magazine)
+		icon_state = "tommygun"
+		item_state = "tommygun"
+	else
+		icon_state = "tommygun0"
+		item_state = "tommygun0"
+	update_held_icon()
+	return
+
+/obj/item/weapon/gun/projectile/submachinegun/tz45
+	name = "TZ-45"
+	desc = "Used by croation units assisting the Herr."
+	icon_state = "tz45"
+	item_state = "tz45"
+	load_method = MAGAZINE
+	slot_flags = SLOT_BACK|SLOT_BELT
+	w_class = 3
+	caliber = "9x19mm"
+	magazine_type = /obj/item/ammo_magazine/mp40/c9x19mm_stenmk2
+	weight = 4.2
+	firemodes = list(
+		list(name="full auto",	burst=1, burst_delay=1.2, recoil=1, move_delay=0, dispersion = list(0.6, 0.8, 1.0, 1.2, 1.4)),
+		)
+	sel_mode = 1
+	attachment_slots = ATTACH_IRONSIGHTS|ATTACH_BARREL
+
+/obj/item/weapon/gun/projectile/submachinegun/tz45/update_icon()
+	if (ammo_magazine)
+		icon_state = "tz45"
+		item_state = "tz45"
+	else
+		icon_state = "tz450"
+		item_state = "tz45"
+	update_held_icon()
+	return
